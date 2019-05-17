@@ -1,98 +1,56 @@
 ## Person_reID_baseline_pytorch
 
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/layumi/Person_reID_baseline_pytorch.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/layumi/Person_reID_baseline_pytorch/context:python)
-[![Build Status](https://travis-ci.org/layumi/Person_reID_baseline_pytorch.svg?branch=master)](https://travis-ci.org/layumi/Person_reID_baseline_pytorch)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/layumi/Person_reID_baseline_pytorch.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/layumi/Person_reID_baseline_pytorch/alerts/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://opensource.org/licenses/MIT)
 
 Baseline Code (with bottleneck) for Person-reID (based on [pytorch](https://pytorch.org)).
 
-It is consistent with the new baseline result in several works, e.g., [Beyond Part Models: Person Retrieval with Refined Part Pooling](https://arxiv.org/abs/1711.09349) and [Camera Style Adaptation for Person Re-identification](https://arxiv.org/abs/1711.10295). **With fp16, our baseline could be trained with only 2GB GPU memory.** 
+It is consistent with the new baseline result in several works, e.g., [Deep Fusion Feature Presentations for Nonaligned Person Re-identification](  ) and [Beyond Part Models: Person Retrieval with Refined Part Pooling](https://arxiv.org/abs/1711.09349).
 
-We arrived **Rank@1=88.24%, mAP=70.68%** only with softmax loss. 
+We arrived **Rank@1=93.20%, mAP=79.77%** only with softmax loss. 
 
-- If you are new to person re-ID, you may check out our [tutorial](https://github.com/layumi/Person_reID_baseline_pytorch/tree/master/tutorial) first.
-
-![](https://github.com/layumi/Person_reID_baseline_pytorch/blob/master/show.png)
 
 Now we have supported:
-- Float16 to save GPU memory based on [apex](https://github.com/NVIDIA/apex)
-- Part-based Convolutional Baseline(PCB)
+- twostream_Resnet50
 - Multiple Query Evaluation
 - Re-Ranking
 - Random Erasing
-- ResNet/DenseNet
+- ResNet/DenseNet/VGG/InceptionNet
 - Visualize Training Curves
 - Visualize Ranking Result
 
 Here we provide hyperparameters and architectures, that were used to generate the result. 
 Some of them (i.e. learning rate) are far from optimal. Do not hesitate to change them and see the effect. 
 
-P.S. With similar structure, we arrived **Rank@1=87.74% mAP=69.46%** with [Matconvnet](http://www.vlfeat.org/matconvnet/). (batchsize=8, dropout=0.75) 
-You may refer to [Here](https://github.com/layumi/Person_reID_baseline_matconvnet).
-Different framework need to be tuned in a different way.
 
 ## Some News
-**What's new:** FP16 has been added. It can be used by simply added `--fp16`. You need to install [apex](https://github.com/NVIDIA/apex) and update your pytorch to 1.0. 
 
-Float16 could save about 50% GPU memory usage without accuracy drop. **Our baseline could be trained with only 2GB GPU memory.** 
-```bash
-python train.py --fp16
-```
 **What's new:** Visualizing ranking result is added.
 ```bash
-python prepare.py
+python featuremap.py
+pyhon heatmap.py
+python file_path.py
+pyhon score_rank.py
 python train.py
 python test.py
-python demo.py --query_index 777
+python model.py
 ```
-
-**What's new:** Multiple-query Evaluation is added. The multiple-query result is about **Rank@1=91.95% mAP=78.06%**. 
-```bash
-python prepare.py
-python train.py
-python test.py --multi
-python evaluate_gpu.py
-```
-
-**What's new:**  [PCB](https://arxiv.org/abs/1711.09349) is added. You may use '--PCB' to use this model. It can achieve around **Rank@1=92.73% mAP=78.16%**. I used a GPU (P40) with 24GB Memory. You may try apply smaller batchsize and choose the smaller learning rate (for stability) to run. (For example, `--batchsize 32 --lr 0.01 --PCB`)
-```bash
-python train.py --PCB --batchsize 64 --name PCB-64
-python test.py --PCB --name PCB-64
-```
-
-**What's new:** You may try `evaluate_gpu.py` to conduct a faster evaluation with GPU.
-
-**What's new:** You may apply '--use_dense' to use `DenseNet-121`. It can arrive around Rank@1=89.91% mAP=73.58%. 
-
-**What's new:** Re-ranking is added to evaluation. The re-ranked result is about **Rank@1=90.20% mAP=84.76%**.
-
-**What's new:** Random Erasing is added to train.
-
-**What's new:** I add some code to generate training curves. The figure will be saved into the model folder when training.
-
-![](https://github.com/layumi/Person_reID_baseline_pytorch/blob/master/train.jpg)
 
 ## Trained Model
 I re-trained several models, and the results may be different with the original one. Just for a quick reference, you may directly use these models. 
-- [ResNet-50](https://drive.google.com/open?id=1WkKEqCUd7hnA8oj6U8DJgHx7nSz7Ogm8)  (Rank@1:88.84% mAP:71.72%)
-- [DenseNet-121](https://drive.google.com/open?id=11_yWO5APgRbn0n4uigpqgEAt0O3GNNx0) (Rank@1:89.82% mAP:72.86%)
-- [PCB](https://drive.google.com/open?id=1DSbY100KWH2YmUc4FuP5cQ37N81G7fuU) (Rank@1:92.46% mAP:77.47%)
+- [ResNet-50]( )  (Rank@1:78.59% mAP:53.33%)
+- [Inceptionv3]( ) (Rank@1:65.38% mAP:35.07%)
+- [PCB]( ) (Rank@1:92.46% mAP:77.47%)
 
 ## Model Structure
 You may learn more from `model.py`. 
 We add one linear layer(bottleneck), one batchnorm layer and relu.
 
 ## Prerequisites
-
 - Python 3.6
 - GPU Memory >= 6G
 - Numpy
 - Pytorch 0.3+
 - [Optional] apex (for float16) 
 
-**(Some reports found that updating numpy can arrive the right accuracy. If you only get 50~80 Top1 Accuracy, just try it.)**
-We have successfully run the code based on numpy 1.12.1 and 1.13.1 .
 
 ## Getting started
 ### Installation
@@ -114,7 +72,7 @@ Because pytorch and torchvision are ongoing projects.
 Here we noted that our code is tested based on Pytorch 0.3.0/0.4.0/0.5.0/1.0.0 and Torchvision 0.2.0/0.2.1 .
 
 ## Dataset & Preparation
-Download [Market1501 Dataset](http://www.liangzheng.org/Project/project_reid.html)
+Download [Market1501 Dataset](http://blog.fangchengjin.cn/reid-market-1501.html)
 
 Preparation: Put the images with the same id in one folder. You may use 
 ```bash
@@ -122,13 +80,16 @@ python prepare.py
 ```
 Remember to change the dataset path to your own path.
 
-Futhermore, you also can test our code on [DukeMTMC-reID Dataset](https://github.com/layumi/DukeMTMC-reID_evaluation).
-Our baseline code is not such high on DukeMTMC-reID **Rank@1=64.23%, mAP=43.92%**. Hyperparameters are need to be tuned.
+Futhermore, you also can test our code on [DukeMTMC-reID Dataset](http://blog.fangchengjin.cn/reid-duke.html).
+Our code is on DukeMTMC-reID **Rank@1=83.25%, mAP=70.41%**. Hyperparameters are need to be tuned.
+
+Futhermore, you also can test our code on [DukeMTMC-reID Dataset](http://blog.fangchengjin.cn/reid-cuhk03.html).
+Our code is on CUHK03-detected **Rank@1=62.50%, mAP=58.03%**. Hyperparameters are need to be tuned.
 
 ## Train
 Train a model by
 ```bash
-python train.py --gpu_ids 0 --name ft_ResNet50 --train_all --batchsize 32  --data_dir your_data_path
+python train.py --gpu_ids 0 --name twostream_Resnet50 --train_all --batchsize 32  --data_dir your_data_path
 ```
 `--gpu_ids` which gpu to run.
 
@@ -184,26 +145,15 @@ It will output Rank@1, Rank@5, Rank@10 and mAP results.
 ## Citation
 As far as I know, the following papers may be the first two to use the bottleneck baseline. You may cite them in your paper.
 ```
-@article{DBLP:journals/corr/SunZDW17,
-  author    = {Yifan Sun and
-               Liang Zheng and
-               Weijian Deng and
-               Shengjin Wang},
-  title     = {SVDNet for Pedestrian Retrieval},
-  booktitle   = {ICCV},
-  year      = {2017},
-}
-
-@article{hermans2017defense,
-  title={In Defense of the Triplet Loss for Person Re-Identification},
-  author={Hermans, Alexander and Beyer, Lucas and Leibe, Bastian},
-  journal={arXiv preprint arXiv:1703.07737},
-  year={2017}
+@article{DBLP:ECCV/2018,
+  author    = {Yifan Sun, Liang Zheng, Yi Yang, Qi Tian, and Shengjin Wang},
+  title     = {Beyond Part Models: Person Retrieval with Refined Part Pooling (and A Strong Convolutional Baseline)},
+  booktitle   = {ECCV},
+  year      = {2018},
 }
 ```
 
 ## Related Repos
-1. [Pedestrian Alignment Network](https://github.com/layumi/Pedestrian_Alignment)
-2. [2stream Person re-ID](https://github.com/layumi/2016_person_re-ID)
-3. [Pedestrian GAN](https://github.com/layumi/Person-reID_GAN)
-4. [Language Person Search](https://github.com/layumi/Image-Text-Embedding)
+1. [Beyond Part Models: Person Retrieval with Refined Part Pooling (and A Strong Convolutional Baseline)](https://link.zhihu.com/?target=https%3A//arxiv.org/abs/1711.09349)
+2. [Twostream Person re-ID]( )
+
